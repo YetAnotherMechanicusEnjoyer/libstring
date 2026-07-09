@@ -18,7 +18,7 @@ pub fn init(allocator: std.mem.Allocator) String {
     };
 }
 
-pub fn deinit(self: *String) usize {
+pub fn deinit(self: *const String) void {
     self.allocator.free(self.content);
 }
 
@@ -87,4 +87,36 @@ pub fn count(self: String, buffer: []const u8) StringError!usize {
         return StringError.EmptyString;
     }
     return std.mem.count(u8, self.content, buffer);
+}
+
+pub fn startsWith(self: String, buffer: []const u8) StringError!bool {
+    return try self.find(buffer) == 0;
+}
+
+pub fn endsWith(self: String, buffer: []const u8) StringError!bool {
+    if (buffer.len > self.len()) {
+        return StringError.OutOfRange;
+    }
+    return try self.rfind(buffer) == self.len() - buffer.len;
+}
+
+pub fn replace(self: *const String, needle: []const u8, replacement: []const u8) !usize {
+    if (needle.len == 0) {
+        return StringError.EmptyString;
+    }
+    const new_size = std.mem.replacementSize(u8, self.content, needle, replacement);
+    try self.allocate(new_size);
+    return std.mem.replace(u8, self.content[0..self.len()], needle, replacement, self.content);
+}
+
+pub fn toUppercase(self: *const String) void {
+    for (self.content[0..self.len()], 0..self.len()) |c, i| {
+        self.content[i] = std.ascii.toUpper(c);
+    }
+}
+
+pub fn toLower(self: *const String) void {
+    for (self.content[0..self.len()], 0..self.len()) |c, i| {
+        self.content[i] = std.ascii.toLower(c);
+    }
 }
