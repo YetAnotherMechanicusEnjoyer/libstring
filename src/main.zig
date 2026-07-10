@@ -38,4 +38,11 @@ pub fn main(init: std.process.Init) !void {
     std.debug.print("\tToUpper: {s}\n", .{str.content});
     str.toLower();
     std.debug.print("\tToLower: {s}\n", .{str.content});
+    const split = try str.split(" ");
+    std.debug.print("\tSplit \" \":\n", .{});
+    for (split.items) |s| {
+        std.debug.print("\t\t>>> {s}\n", .{s.content});
+    }
+    str.clear();
+    std.debug.print("\tClear: content: {s}, len: {}\n", .{ str.content, str.len() });
 }

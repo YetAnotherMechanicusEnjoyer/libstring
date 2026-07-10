@@ -34,6 +34,10 @@ pub fn from(allocator: std.mem.Allocator, content: []const u8) StringError!Strin
     return str.*;
 }
 
+pub fn clone(self: String) StringError!String {
+    return try String.from(self.allocator, self.content);
+}
+
 pub fn push(self: *String, src: []const u8) StringError!void {
     try self.insert(src, self.content.len);
 }
@@ -116,7 +120,36 @@ pub fn toUppercase(self: *const String) void {
 }
 
 pub fn toLower(self: *const String) void {
-    for (self.content[0..self.len()], 0..self.len()) |c, i| {
-        self.content[i] = std.ascii.toLower(c);
+    for (self.content) |*c| {
+        c.* = std.ascii.toLower(c.*);
     }
+}
+
+pub fn clear(self: *const String) void {
+    for (self.content) |*c| {
+        c.* = 0;
+    }
+}
+
+pub fn split(self: String, buffer: []const u8) !std.ArrayList(String) {
+    var arr: std.ArrayList(String) = .empty;
+    errdefer arr.deinit(self.allocator);
+
+    const null_char: u8 = 0;
+
+    _ = try self.replace(buffer, &[_]u8{null_char});
+    var i: usize = 0;
+    while (i < self.len()) {
+        while (i < self.len() and self.content[i] == null_char) {
+            i += 1;
+        }
+        const buff = String.init(self.allocator);
+        while (i < self.len() and self.content[i] != null_char) {
+            try @constCast(&buff).push(&[_]u8{self.content[i]});
+            i += 1;
+        }
+        try arr.append(self.allocator, try buff.clone());
+    }
+
+    return arr;
 }
