@@ -9,6 +9,7 @@ pub const StringError = error{
     OutOfMemory,
     OutOfRange,
     EmptyString,
+    NotFound,
 };
 
 pub fn init(allocator: std.mem.Allocator) String {
@@ -40,6 +41,10 @@ pub fn clone(self: String) StringError!String {
 
 pub fn push(self: *String, src: []const u8) StringError!void {
     try self.insert(src, self.content.len);
+}
+
+pub fn push_char(self: *String, c: u8) StringError!void {
+    try self.insert(&[_]u8{c}, self.content.len);
 }
 
 pub fn insert(self: *const String, src: []const u8, idx: usize) StringError!void {
@@ -146,7 +151,7 @@ pub fn split(self: String, buffer: []const u8) ![]String {
         }
         const buff = String.init(self.allocator);
         while (i < copy.len() and copy.content[i] != null_char) {
-            try @constCast(&buff).push(&[_]u8{copy.content[i]});
+            try @constCast(&buff).push_char(copy.content[i]);
             i += 1;
         }
         try arr.append(self.allocator, try buff.clone());
@@ -175,7 +180,7 @@ pub fn split_once(self: String, buffer: []const u8) ![]String {
 pub fn rsplit_once(self: String, buffer: []const u8) ![]String {
     const idx = try self.rfind(buffer);
     if (idx == null) {
-        return StringError.OutOfRange;
+        return StringError.NotFound;
     }
     const i = idx.?;
 
