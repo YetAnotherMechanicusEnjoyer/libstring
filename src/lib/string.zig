@@ -93,11 +93,11 @@ pub fn count(self: String, buffer: []const u8) StringError!usize {
     return std.mem.count(u8, self.content, buffer);
 }
 
-pub fn startsWith(self: String, buffer: []const u8) StringError!bool {
+pub fn starts_with(self: String, buffer: []const u8) StringError!bool {
     return try self.find(buffer) == 0;
 }
 
-pub fn endsWith(self: String, buffer: []const u8) StringError!bool {
+pub fn ends_with(self: String, buffer: []const u8) StringError!bool {
     if (buffer.len > self.len()) {
         return StringError.OutOfRange;
     }
@@ -113,13 +113,13 @@ pub fn replace(self: *const String, needle: []const u8, replacement: []const u8)
     return std.mem.replace(u8, self.content[0..self.len()], needle, replacement, self.content);
 }
 
-pub fn toUppercase(self: *const String) void {
+pub fn to_uppercase(self: *const String) void {
     for (self.content[0..self.len()], 0..self.len()) |c, i| {
         self.content[i] = std.ascii.toUpper(c);
     }
 }
 
-pub fn toLower(self: *const String) void {
+pub fn to_lowercase(self: *const String) void {
     for (self.content) |*c| {
         c.* = std.ascii.toLower(c.*);
     }
@@ -131,25 +131,60 @@ pub fn clear(self: *const String) void {
     }
 }
 
-pub fn split(self: String, buffer: []const u8) !std.ArrayList(String) {
+pub fn split(self: String, buffer: []const u8) ![]String {
     var arr: std.ArrayList(String) = .empty;
     errdefer arr.deinit(self.allocator);
 
     const null_char: u8 = 0;
+    const copy = try self.clone();
 
-    _ = try self.replace(buffer, &[_]u8{null_char});
+    _ = try copy.replace(buffer, &[_]u8{null_char});
     var i: usize = 0;
-    while (i < self.len()) {
-        while (i < self.len() and self.content[i] == null_char) {
+    while (i < copy.len()) {
+        while (i < copy.len() and copy.content[i] == null_char) {
             i += 1;
         }
         const buff = String.init(self.allocator);
-        while (i < self.len() and self.content[i] != null_char) {
-            try @constCast(&buff).push(&[_]u8{self.content[i]});
+        while (i < copy.len() and copy.content[i] != null_char) {
+            try @constCast(&buff).push(&[_]u8{copy.content[i]});
             i += 1;
         }
         try arr.append(self.allocator, try buff.clone());
     }
 
-    return arr;
+    return try arr.toOwnedSlice(self.allocator);
+}
+
+pub fn split_once(self: String, buffer: []const u8) ![]String {
+    const idx = try self.find(buffer);
+    if (idx == null) {
+        return StringError.OutOfRange;
+    }
+    const i = idx.?;
+
+    if (i + buffer.len >= self.len()) {
+        return StringError.OutOfRange;
+    }
+    var arr: std.ArrayList(String) = .empty;
+    try arr.append(self.allocator, try String.from(self.allocator, self.content[0..i]));
+    try arr.append(self.allocator, try String.from(self.allocator, self.content[i + buffer.len .. self.len()]));
+
+    return try arr.toOwnedSlice(self.allocator);
+}
+
+pub fn rsplit_once(self: String, buffer: []const u8) ![]String {
+    const idx = try self.rfind(buffer);
+    if (idx == null) {
+        return StringError.OutOfRange;
+    }
+    const i = idx.?;
+
+    if (i + buffer.len >= self.len()) {
+        return StringError.OutOfRange;
+    }
+    var arr: std.ArrayList(String) = .empty;
+    try arr.append(self.allocator, try String.from(self.allocator, self.content[0..i]));
+    try arr.append(self.allocator, try String.from(self.allocator, self.content[i + buffer.len .. self.len()]));
+
+    return try arr.toOwnedSlice(self.allocator);
 }

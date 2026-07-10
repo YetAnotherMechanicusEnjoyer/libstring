@@ -39,10 +39,14 @@ pub fn main(init: std.process.Init) !void {
     str.toLower();
     std.debug.print("\tToLower: {s}\n", .{str.content});
     const split = try str.split(" ");
-    std.debug.print("\tSplit \" \":\n", .{});
-    for (split.items) |s| {
+    std.debug.print("\tSplit \"{s}\" \" \":\n", .{str.content});
+    for (split) |s| {
         std.debug.print("\t\t>>> {s}\n", .{s.content});
     }
+    const split_once = try str.splitOnce(" ");
+    std.debug.print("\tSplitOnce \"{s}\" \" \":\n\t\t>>> {s}\n\t\t>>> {s}\n", .{ str.content, split_once[0].content, split_once[1].content });
+    const rsplit_once = try str.rsplitOnce(" ");
+    std.debug.print("\tRsplitOnce \"{s}\" \" \":\n\t\t>>> {s}\n\t\t>>> {s}\n", .{ str.content, rsplit_once[0].content, rsplit_once[1].content });
     str.clear();
     std.debug.print("\tClear: content: {s}, len: {}\n", .{ str.content, str.len() });
 }
