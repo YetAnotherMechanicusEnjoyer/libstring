@@ -1,4 +1,5 @@
 const std = @import("std");
+const types = @import("types.zig");
 
 pub const String = @This();
 
@@ -9,6 +10,7 @@ pub const StringError = error{
     OutOfMemory,
     OutOfRange,
     EmptyString,
+    WrongType,
     NotFound,
 };
 
@@ -39,12 +41,18 @@ pub fn clone(self: String) StringError!String {
     return try String.from(self.allocator, self.content);
 }
 
-pub fn push(self: *String, src: []const u8) StringError!void {
-    try self.insert(src, self.content.len);
-}
+pub fn push(self: *String, src: anytype) StringError!void {
+    const T = @TypeOf(src);
 
-pub fn push_char(self: *String, c: u8) StringError!void {
-    try self.insert(&[_]u8{c}, self.content.len);
+    if (T == u8) {
+        const c = [_]u8{src};
+        try self.insert(&c, self.content.len);
+    } else if (comptime types.is_literal(T)) {
+        const s: []const u8 = if (@typeInfo(T) == .array) &src else src;
+        try self.insert(s, self.content.len);
+    } else {
+        @compileError("Expected u8 or []u8, found: {}" ++ @typeName(T));
+    }
 }
 
 pub fn insert(self: *const String, src: []const u8, idx: usize) StringError!void {
@@ -151,7 +159,7 @@ pub fn split(self: String, buffer: []const u8) ![]String {
         }
         const buff = String.init(self.allocator);
         while (i < copy.len() and copy.content[i] != null_char) {
-            try @constCast(&buff).push_char(copy.content[i]);
+            try @constCast(&buff).push(copy.content[i]);
             i += 1;
         }
         try arr.append(self.allocator, try buff.clone());
