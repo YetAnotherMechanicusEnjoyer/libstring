@@ -4,20 +4,20 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.option(std.builtin.OptimizeMode, "mode", "") orelse .Debug;
 
-    const lib_mod = b.createModule(.{
-        .root_source_file = b.path("src/lib/main.zig"),
+    const libstring_mod = b.createModule(.{
+        .root_source_file = b.path("src/lib/string.zig"),
         .target = target,
         .optimize = optimize,
     });
 
     if (optimize != .Debug) {
-        lib_mod.stack_protector = true;
+        libstring_mod.stack_protector = true;
     }
 
-    const lib = b.addLibrary(.{
+    const libstring = b.addLibrary(.{
         .linkage = .static,
         .name = "string",
-        .root_module = lib_mod,
+        .root_module = libstring_mod,
     });
 
     const exe_mod = b.createModule(.{
@@ -26,7 +26,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    exe_mod.addImport("string", lib_mod);
+    exe_mod.addImport("string", libstring_mod);
 
     if (optimize != .Debug) {
         exe_mod.stack_protector = true;
@@ -37,6 +37,6 @@ pub fn build(b: *std.Build) void {
         .root_module = exe_mod,
     });
 
-    b.installArtifact(lib);
+    b.installArtifact(libstring);
     b.installArtifact(exe);
 }
