@@ -21,17 +21,6 @@ pub fn build(b: *std.Build) void {
         .root_module = libstring_mod,
     });
 
-    const exe = b.addExecutable(.{
-        .name = "string_exe",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/main.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-
-    exe.root_module.addImport("string", libstring_mod);
-
     const tests_mod = b.createModule(.{
         .root_source_file = b.path("tests/string.zig"),
         .target = target,
@@ -49,5 +38,4 @@ pub fn build(b: *std.Build) void {
     test_option.dependOn(&run_tests.step);
 
     b.installArtifact(libstring);
-    b.installArtifact(exe);
 }
