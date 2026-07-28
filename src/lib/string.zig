@@ -117,7 +117,7 @@ pub fn ends_with(self: String, buffer: []const u8) StringError!bool {
     return try self.rfind(buffer) == self.len() - buffer.len;
 }
 
-pub fn replace(self: *const String, needle: []const u8, replacement: []const u8) !usize {
+pub fn replace(self: *const String, needle: []const u8, replacement: []const u8) StringError!usize {
     if (needle.len == 0) {
         return StringError.EmptyString;
     }
@@ -146,10 +146,11 @@ pub fn clear(self: *const String) void {
 
 pub fn split(self: String, buffer: []const u8) ![]String {
     var arr: std.ArrayList(String) = .empty;
-    errdefer arr.deinit(self.allocator);
+    defer arr.deinit(self.allocator);
 
     const null_char: u8 = 0;
     const copy = try self.clone();
+    defer copy.deinit();
 
     _ = try copy.replace(buffer, &[_]u8{null_char});
     var i: usize = 0;
@@ -158,6 +159,7 @@ pub fn split(self: String, buffer: []const u8) ![]String {
             i += 1;
         }
         const buff = String.init(self.allocator);
+        defer buff.deinit();
         while (i < copy.len() and copy.content[i] != null_char) {
             try @constCast(&buff).push(copy.content[i]);
             i += 1;
@@ -178,9 +180,15 @@ pub fn split_once(self: String, buffer: []const u8) ![]String {
     if (i + buffer.len >= self.len()) {
         return StringError.OutOfRange;
     }
+
     var arr: std.ArrayList(String) = .empty;
-    try arr.append(self.allocator, try String.from(self.allocator, self.content[0..i]));
-    try arr.append(self.allocator, try String.from(self.allocator, self.content[i + buffer.len .. self.len()]));
+    defer arr.deinit(self.allocator);
+
+    const left = try String.from(self.allocator, self.content[0..i]);
+    const right = try String.from(self.allocator, self.content[i + buffer.len .. self.len()]);
+
+    try arr.append(self.allocator, left);
+    try arr.append(self.allocator, right);
 
     return try arr.toOwnedSlice(self.allocator);
 }
@@ -195,9 +203,15 @@ pub fn rsplit_once(self: String, buffer: []const u8) ![]String {
     if (i + buffer.len >= self.len()) {
         return StringError.OutOfRange;
     }
+
     var arr: std.ArrayList(String) = .empty;
-    try arr.append(self.allocator, try String.from(self.allocator, self.content[0..i]));
-    try arr.append(self.allocator, try String.from(self.allocator, self.content[i + buffer.len .. self.len()]));
+    defer arr.deinit(self.allocator);
+
+    const left = try String.from(self.allocator, self.content[0..i]);
+    const right = try String.from(self.allocator, self.content[i + buffer.len .. self.len()]);
+
+    try arr.append(self.allocator, left);
+    try arr.append(self.allocator, right);
 
     return try arr.toOwnedSlice(self.allocator);
 }
