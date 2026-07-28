@@ -2,7 +2,8 @@ const std = @import("std");
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
-    const optimize = b.option(std.builtin.OptimizeMode, "mode", "") orelse .Debug;
+    const optimize = b.standardOptimizeOption(.{});
+    const test_option = b.step("test", "Run tests");
 
     const libstring_mod = b.createModule(.{
         .root_source_file = b.path("src/lib/string.zig"),
@@ -20,22 +21,32 @@ pub fn build(b: *std.Build) void {
         .root_module = libstring_mod,
     });
 
-    const exe_mod = b.createModule(.{
-        .root_source_file = b.path("src/main.zig"),
+    const exe = b.addExecutable(.{
+        .name = "string_exe",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/main.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+
+    exe.root_module.addImport("string", libstring_mod);
+
+    const tests_mod = b.createModule(.{
+        .root_source_file = b.path("tests/string.zig"),
         .target = target,
         .optimize = optimize,
     });
 
-    exe_mod.addImport("string", libstring_mod);
+    tests_mod.addImport("string", libstring_mod);
 
-    if (optimize != .Debug) {
-        exe_mod.stack_protector = true;
-    }
-
-    const exe = b.addExecutable(.{
+    const tests = b.addTest(.{
         .name = "string_test",
-        .root_module = exe_mod,
+        .root_module = tests_mod,
     });
+
+    const run_tests = b.addRunArtifact(tests);
+    test_option.dependOn(&run_tests.step);
 
     b.installArtifact(libstring);
     b.installArtifact(exe);
