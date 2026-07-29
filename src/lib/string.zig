@@ -144,7 +144,7 @@ pub fn clear(self: *const String) void {
     }
 }
 
-pub fn split(self: String, buffer: []const u8) ![]String {
+pub fn split(self: String, buffer: []const u8) StringError![]String {
     var arr: std.ArrayList(String) = .empty;
     defer arr.deinit(self.allocator);
 
@@ -170,7 +170,7 @@ pub fn split(self: String, buffer: []const u8) ![]String {
     return try arr.toOwnedSlice(self.allocator);
 }
 
-pub fn split_once(self: String, buffer: []const u8) ![]String {
+pub fn split_once(self: String, buffer: []const u8) StringError![]String {
     const idx = try self.find(buffer);
     if (idx == null) {
         return StringError.OutOfRange;
@@ -193,7 +193,7 @@ pub fn split_once(self: String, buffer: []const u8) ![]String {
     return try arr.toOwnedSlice(self.allocator);
 }
 
-pub fn rsplit_once(self: String, buffer: []const u8) ![]String {
+pub fn rsplit_once(self: String, buffer: []const u8) StringError![]String {
     const idx = try self.rfind(buffer);
     if (idx == null) {
         return StringError.NotFound;
