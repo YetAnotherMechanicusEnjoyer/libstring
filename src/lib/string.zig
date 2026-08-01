@@ -41,6 +41,10 @@ pub fn clone(self: String) StringError!String {
     return try String.from(self.allocator, self.content);
 }
 
+pub fn as_literal(self: String) []u8 {
+    return self.content;
+}
+
 pub fn push(self: *String, src: anytype) StringError!void {
     const T = @TypeOf(src);
 
@@ -51,7 +55,7 @@ pub fn push(self: *String, src: anytype) StringError!void {
         const s: []const u8 = if (@typeInfo(T) == .array) &src else src;
         try self.insert(s, self.content.len);
     } else {
-        @compileError("Expected u8 or []u8, found: {}" ++ @typeName(T));
+        @compileError("Expected u8 or []u8, found: " ++ @typeName(T));
     }
 }
 
