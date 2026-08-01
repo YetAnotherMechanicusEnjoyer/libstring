@@ -5,7 +5,7 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
     const test_option = b.step("test", "Run tests");
 
-    const libstring_mod = b.createModule(.{
+    const libstring_mod = b.addModule("string", .{
         .root_source_file = b.path("src/lib/string.zig"),
         .target = target,
         .optimize = optimize,
