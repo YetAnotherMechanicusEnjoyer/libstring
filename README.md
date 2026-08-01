@@ -33,7 +33,7 @@ zig fetch --save git+https://github.com/YetAnotherMechanicusEnjoyer/libstring
 >
 > This command will automatically fetch the latest commit, calculate the correct hash, and add it to your `build.zig.zon` dependencies.
 
-### 3. Update build.zig
+### 3. Update `build.zig`
 
 Lastly, link the dependency to your project in your `build.zig` file. Here is a complete example for a binary executable:
 
