@@ -21,7 +21,37 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: macos-latest
+            os-name: macos
+            target: x86_64-apple-darwin
+            architecture: x86_64
+            use-cross: false
+          - os: macos-latest
+            os-name: macos
+            target: aarch64-apple-darwin
+            architecture: arm64
+            use-cross: false
+          - os: ubuntu-22.04
+            os-name: linux
+            target: x86_64-unknown-linux-gnu
+            architecture: x86_64
+            use-cross: false
+          - os: ubuntu-22.04-arm
+            os-name: linux
+            target: aarch64-unknown-linux-gnu
+            architecture: arm64
+            use-cross: false
+          - os: windows-latest
+            os-name: windows
+            target: x86_64-pc-windows-msvc
+            architecture: x86_64
+            use-cross: false
+          - os: windows-latest
+            os-name: windows
+            target: aarch64-pc-windows-msvc
+            architecture: arm64
+            use-cross: true
 
     defaults:
       run:
