@@ -1,5 +1,5 @@
 const std = @import("std");
-const types = @import("string/types.zig");
+const types = @import("types.zig");
 
 pub const String = @This();
 
