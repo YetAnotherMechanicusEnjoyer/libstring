@@ -3,7 +3,8 @@ const std = @import("std");
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
-    const test_option = b.step("test", "Run tests");
+    const test_step = b.step("test", "Run tests");
+    const docs_step = b.step("docs", "Generate documentation");
 
     const libstring_mod = b.addModule("string", .{
         .root_source_file = b.path("src/lib/string.zig"),
@@ -35,7 +36,14 @@ pub fn build(b: *std.Build) void {
     });
 
     const run_tests = b.addRunArtifact(tests);
-    test_option.dependOn(&run_tests.step);
+    test_step.dependOn(&run_tests.step);
+
+    const install_docs = b.addInstallDirectory(.{
+        .source_dir = libstring.getEmittedDocs(),
+        .install_dir = .prefix,
+        .install_subdir = "docs",
+    });
+    docs_step.dependOn(&install_docs.step);
 
     b.installArtifact(libstring);
 }
