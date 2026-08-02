@@ -1,6 +1,6 @@
-name: Zig Actions
+name: Zig CI/CD
 
-run-name: Zig Actions | ${{ github.event_name }} by ${{ github.actor }} on '${{ github.ref_name }}'
+run-name: Zig CI/CD | ${{ github.event_name }} by ${{ github.actor }} on '${{ github.ref_name }}'
 
 on:
   push:
