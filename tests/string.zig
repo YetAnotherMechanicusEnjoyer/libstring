@@ -27,14 +27,14 @@ test "String as_literal" {
     const allocator = testing.allocator;
     const buffer = "This is a text";
 
-    const str = try String.from(allocator, buffer);
+    var str = try String.from(allocator, buffer);
     defer str.deinit();
 
     const literal = str.as_literal();
 
     const to_push: u8 = 42;
 
-    try @constCast(&str).push(to_push);
+    try str.push(to_push);
 
     try testing.expect(std.mem.eql(u8, literal, buffer));
     try testing.expect(!std.mem.eql(u8, str.content, buffer));
@@ -117,7 +117,7 @@ test "String replace" {
     const allocator = testing.allocator;
     const buffer = "This is a text";
 
-    const str = try String.from(allocator, buffer);
+    var str = try String.from(allocator, buffer);
     defer str.deinit();
 
     const changes = str.replace("s", "z");

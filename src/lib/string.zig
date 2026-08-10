@@ -30,17 +30,17 @@ pub fn deinit(self: *const String) void {
 }
 
 /// Reallocates the string's content buffer to the specified size.
-pub fn allocate(self: *const String, size: usize) StringError!void {
-    @constCast(self).content = self.allocator.realloc(self.content, size) catch {
+pub fn allocate(self: *String, size: usize) StringError!void {
+    self.content = self.allocator.realloc(self.content, size) catch {
         return StringError.OutOfMemory;
     };
 }
 
 /// Creates a newly allocated String from an existing byte slice.
 pub fn from(allocator: std.mem.Allocator, content: []const u8) StringError!String {
-    const str = @constCast(&String.init(allocator));
+    var str = String.init(allocator);
     try str.push(content);
-    return str.*;
+    return str;
 }
 
 /// Creates a deep copy of the current String.
@@ -69,7 +69,7 @@ pub fn push(self: *String, src: anytype) StringError!void {
 }
 
 /// Inserts a string slice into the string at the specified index.
-pub fn insert(self: *const String, src: []const u8, idx: usize) StringError!void {
+pub fn insert(self: *String, src: []const u8, idx: usize) StringError!void {
     if (idx > self.content.len) {
         return StringError.OutOfRange;
     }
@@ -141,7 +141,7 @@ pub fn ends_with(self: String, buffer: []const u8) StringError!bool {
 
 /// Replaces all occurrences of needle with replacement in the string.
 /// Modifies the string in place and returns the number of replacements made.
-pub fn replace(self: *const String, needle: []const u8, replacement: []const u8) StringError!usize {
+pub fn replace(self: *String, needle: []const u8, replacement: []const u8) StringError!usize {
     if (needle.len == 0) {
         return StringError.EmptyString;
     }
@@ -178,7 +178,7 @@ pub fn split(self: String, buffer: []const u8) StringError![]String {
     defer arr.deinit(self.allocator);
 
     const null_char: u8 = 0;
-    const copy = try self.clone();
+    var copy = try self.clone();
     defer copy.deinit();
 
     _ = try copy.replace(buffer, &[_]u8{null_char});
@@ -187,10 +187,10 @@ pub fn split(self: String, buffer: []const u8) StringError![]String {
         while (i < copy.len() and copy.content[i] == null_char) {
             i += 1;
         }
-        const buff = String.init(self.allocator);
+        var buff = String.init(self.allocator);
         defer buff.deinit();
         while (i < copy.len() and copy.content[i] != null_char) {
-            try @constCast(&buff).push(copy.content[i]);
+            try buff.push(copy.content[i]);
             i += 1;
         }
         try arr.append(self.allocator, try buff.clone());
