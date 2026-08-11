@@ -68,6 +68,14 @@ pub fn push(self: *String, src: anytype) StringError!void {
     }
 }
 
+/// Appends a formatted string literal/slice to the end of the string.
+pub fn push_fmt(self: *String, comptime fmt: []const u8, args: anytype) StringError!void {
+    const src = std.fmt.allocPrint(self.allocator, fmt, args) catch return StringError.OutOfMemory;
+    defer self.allocator.free(src);
+
+    try self.insert(src, self.content.len);
+}
+
 /// Inserts a string slice into the string at the specified index.
 pub fn insert(self: *String, src: []const u8, idx: usize) StringError!void {
     if (idx > self.content.len) {

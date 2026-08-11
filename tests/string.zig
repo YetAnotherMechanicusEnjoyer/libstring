@@ -23,6 +23,16 @@ test "String from" {
     try testing.expectEqual(str.content.len, buffer.len);
 }
 
+test "String push_fmt" {
+    const allocator = testing.allocator;
+    var str = String.init(allocator);
+    defer str.deinit();
+
+    try str.push_fmt("This is {s} a text: {}", .{ "not", 1 });
+
+    try testing.expect(std.mem.eql(u8, str.content, "This is not a text: 1"));
+}
+
 test "String as_literal" {
     const allocator = testing.allocator;
     const buffer = "This is a text";
