@@ -13,7 +13,9 @@ pub fn build(b: *std.Build) void {
     });
 
     if (optimize != .Debug) {
-        libstring_mod.stack_protector = true;
+        libstring_mod.strip = true;
+        libstring_mod.error_tracing = false;
+        libstring_mod.omit_frame_pointer = true;
     }
 
     const libstring = b.addLibrary(.{
